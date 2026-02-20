@@ -1,0 +1,12 @@
+.env
+*.db
+staff_vision.db
+temp_flyers/
+__pycache__/
+venv/
+.venv/
+.idea/
+.vscode/
+*.pyc
+logs/
+data/
