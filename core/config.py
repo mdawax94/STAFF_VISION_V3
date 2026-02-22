@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 # Base directory using pathlib
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
+SCREENSHOTS_DIR = DATA_DIR / "screenshots"
 TEMP_FLYERS_DIR = BASE_DIR / "temp_flyers"
 
 # Ensure directories exist
 DATA_DIR.mkdir(exist_ok=True)
+SCREENSHOTS_DIR.mkdir(exist_ok=True)
 TEMP_FLYERS_DIR.mkdir(exist_ok=True)
 
 # Path to .env file
@@ -19,24 +21,19 @@ if ENV_PATH.exists():
 else:
     raise FileNotFoundError(f".env file not found at {ENV_PATH}")
 
-def get_env_variable(var_name: str) -> str:
-    """Retrieves environment variables or raises an error."""
+def get_env_variable(var_name: str, required: bool = True) -> str:
+    """Retrieves environment variables. Raises only if required=True."""
     value = os.getenv(var_name)
-    if value is None:
+    if value is None and required:
         raise ValueError(f"Missing mandatory environment variable: {var_name}")
-    return value
+    return value or ""
 
-# API Keys
-GEMINI_API_KEY = get_env_variable("GEMINI_API_KEY")
-SERPAPI_KEY = get_env_variable("SERPAPI_KEY")
-SCRAPINGBEE_API_KEY = get_env_variable("SCRAPINGBEE_API_KEY")
+# --- Clé obligatoire (utilisée partout) ---
+GEMINI_API_KEY = get_env_variable("GEMINI_API_KEY", required=True)
 
-# Configuration ScrapingBee
-SCRAPINGBEE_PARAMS = {
-    "render_js": "True",
-    "premium_proxy": "True",
-    "block_ads": "True",
-}
+# --- Clés optionnelles (gérées par le CredentialManager en DB) ---
+SERPAPI_KEY = get_env_variable("SERPAPI_KEY", required=False)
+SCRAPINGBEE_API_KEY = get_env_variable("SCRAPINGBEE_API_KEY", required=False)
 
 # Database configuration
 DB_PATH = DATA_DIR / "staff_vision.db"
