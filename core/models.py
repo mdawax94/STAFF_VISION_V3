@@ -28,10 +28,10 @@ class ApiHealthCheck(Base):
     """Stocke le statut Online/Offline de chaque service externe pour le Dashboard."""
     __tablename__ = "api_health_checks"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    service_name = Column(String, nullable=False, unique=True)  # 'gemini', 'serpapi', 'scrapingbee', 'keepa'
-    status = Column(String, default="UNKNOWN")  # ONLINE, OFFLINE, DEGRADED, UNKNOWN
+    service_name = Column(String, nullable=False, unique=True)
+    status = Column(String, default="UNKNOWN")
     last_check_at = Column(DateTime, nullable=True)
-    last_response_ms = Column(Integer, nullable=True)  # Latence en ms
+    last_response_ms = Column(Integer, nullable=True)
     error_message = Column(Text, nullable=True)
     consecutive_failures = Column(Integer, default=0)
 
@@ -44,21 +44,19 @@ class AgentConfig(Base):
     __tablename__ = "agent_configs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     nom = Column(String, nullable=False)
-    type_agent = Column(String, nullable=False)  # CATALOGUE, COUPON, ODR, FIDELITE, TC
-    # — NEW Blueprint v2 columns —
-    template_type = Column(String, default="catalogue")  # 'catalogue' ou 'regles'
+    type_agent = Column(String, nullable=False)
+    template_type = Column(String, default="catalogue")
     target_url = Column(String, nullable=False)
-    target_api = Column(String, default="playwright")  # 'playwright', 'scrapingbee', 'firecrawl'
-    pagination_selector = Column(String, nullable=True)  # CSS selector for next page
-    max_pages = Column(Integer, default=1)  # Max pages to crawl
-    requires_scroll = Column(Boolean, default=False)  # Infinite scroll detection
-    worker_type = Column(String, default="HEADLESS_CAMELEON")  # API_FURTIF | HEADLESS_CAMELEON | VISION_SNIPER
-    # — END NEW —
+    target_api = Column(String, default="playwright")
+    pagination_selector = Column(String, nullable=True)
+    max_pages = Column(Integer, default=1)
+    requires_scroll = Column(Boolean, default=False)
+    worker_type = Column(String, default="HEADLESS_CAMELEON")
     frequence_cron = Column(String, nullable=False, default="manual")
     is_active = Column(Boolean, default=True)
     last_run = Column(DateTime, nullable=True)
     last_run_duration_s = Column(Float, nullable=True)
-    status = Column(String, default="IDLE")  # IDLE, RUNNING, ERROR
+    status = Column(String, default="IDLE")
     error_message = Column(Text, nullable=True)
     tenant_id = Column(Integer, ForeignKey("db_tenants.id"), nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.utcnow())
@@ -92,23 +90,20 @@ class OffreRetail(Base):
     agent_config_id = Column(Integer, ForeignKey("agent_configs.id"), nullable=True)
     ean = Column(String, ForeignKey("produits_reference.ean"), nullable=False)
     enseigne = Column(String, nullable=False)
-    # — Prix & Décomposition QA Phase 1 —
     prix_public = Column(Float, nullable=False)
-    prix_brut = Column(Float, nullable=True)  # Prix avant toute remise magasin
-    prix_initial_barre = Column(Float, nullable=True)  # V3: Prix barré affiché (l'ancien prix)
-    promo_directe_type = Column(String, nullable=True)  # V3: REMISE_IMMEDIATE, LOT, 2EME_GRATUIT, etc.
+    prix_brut = Column(Float, nullable=True)
+    prix_initial_barre = Column(Float, nullable=True)
+    promo_directe_type = Column(String, nullable=True)
     remise_immediate = Column(Float, default=0.0)
     valeur_coupon = Column(Float, default=0.0)
     valeur_odr = Column(Float, default=0.0)
     remise_fidelite = Column(Float, default=0.0)
     prix_net_net_calcule = Column(Float, nullable=True)
-    prix_revente_marche = Column(Float, nullable=True)  # V3: Phase 2 Market Bot
-    validation_humaine_phase_1 = Column(String, default="PENDING")  # Legacy: PENDING, VALIDATED, REJECTED
-    # — V3: QA Workflow strict —
-    reliability_score = Column(Float, default=0.0)  # 0.0-1.0
-    qa_status = Column(String, default="PENDING")  # PENDING, FLAGGED, ERROR, VALIDATED
-    flag_reason = Column(Text, nullable=True)  # Raison du flag (EAN deviné, prix suspect, etc.)
-    # — Preuve & Metadata —
+    prix_revente_marche = Column(Float, nullable=True)
+    validation_humaine_phase_1 = Column(String, default="PENDING")
+    reliability_score = Column(Float, default=0.0)
+    qa_status = Column(String, default="PENDING")
+    flag_reason = Column(Text, nullable=True)
     image_preuve_path = Column(String, nullable=True)
     image_present = Column(Boolean, default=False)
     margin_rate = Column(Float, nullable=True)
@@ -140,7 +135,6 @@ class OffreRetail(Base):
 # ==========================================
 
 class RulesMatrix(Base):
-    """Extraction du Logic Miner : Les conditions mathématiques/juridiques."""
     __tablename__ = "rules_matrix"
     id = Column(Integer, primary_key=True, autoincrement=True)
     enseigne_concernee = Column(String, nullable=False)
@@ -153,12 +147,11 @@ class RulesMatrix(Base):
 # ==========================================
 
 class ApiKey(Base):
-    """Stocke les clés d'API (Gemini, SerpApi, etc) pour le KeyManager"""
     __tablename__ = "api_keys"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    service_name = Column(String, nullable=False) # e.g 'GEMINI', 'SERPAPI', 'SCRAPINGBEE'
+    service_name = Column(String, nullable=False)
     api_key = Column(String, unique=True, nullable=False)
-    status = Column(String, default="ACTIVE") # ACTIVE, EXHAUSTED
+    status = Column(String, default="ACTIVE")
     last_used = Column(DateTime, nullable=True)
     raw_text_extract = Column(Text, nullable=True)
     confidence = Column(Float, default=0.0)
@@ -166,19 +159,18 @@ class ApiKey(Base):
 
 
 class RuleMatrix(Base):
-    """Règles promotionnelles globales pour le Stacking Engine (ODR, Code Promo, Remise Panier)."""
     __tablename__ = "rule_matrix"
     id = Column(Integer, primary_key=True, autoincrement=True)
     rule_name = Column(String, nullable=False)
-    rule_type = Column(String, nullable=False)  # ODR, CODE_PROMO, REMISE_PANIER
-    target_enseigne = Column(String, nullable=True)  # null = toutes enseignes
-    target_brand = Column(String, nullable=True)  # null = toutes marques
-    target_category = Column(String, nullable=True)  # null = toutes catégories
-    target_ean = Column(String, nullable=True)  # null = tous produits
+    rule_type = Column(String, nullable=False)
+    target_enseigne = Column(String, nullable=True)
+    target_brand = Column(String, nullable=True)
+    target_category = Column(String, nullable=True)
+    target_ean = Column(String, nullable=True)
     discount_value = Column(Float, nullable=False, default=0.0)
-    is_percentage = Column(Boolean, default=False)  # True = %, False = EUR
-    min_purchase_amount = Column(Float, nullable=True)  # Montant min pour activation
-    max_uses = Column(Integer, nullable=True)  # Nombre max d'utilisations
+    is_percentage = Column(Boolean, default=False)
+    min_purchase_amount = Column(Float, nullable=True)
+    max_uses = Column(Integer, nullable=True)
     source_url = Column(String, nullable=True)
     date_debut = Column(DateTime, nullable=True)
     date_expiration = Column(DateTime, nullable=True)
@@ -186,7 +178,6 @@ class RuleMatrix(Base):
     created_at = Column(DateTime, default=lambda: datetime.utcnow())
 
 class LevierActif(Base):
-    """Un Coupon, CashBack ou ODR extracté et actif."""
     __tablename__ = "leviers_actifs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     agent_config_id = Column(Integer, ForeignKey("agent_configs.id"), nullable=True)
@@ -212,7 +203,6 @@ class LevierActif(Base):
 # ==========================================
 
 class MarketSonde(Base):
-    """Vérification instantanée des prix de marché."""
     __tablename__ = "market_sonde"
     id = Column(Integer, primary_key=True, autoincrement=True)
     ean = Column(String, ForeignKey("produits_reference.ean"), nullable=False)
@@ -224,11 +214,9 @@ class MarketSonde(Base):
     shipping_cost = Column(Float, default=0.0)
     bsr = Column(Integer, nullable=True)
     seller_count = Column(Integer, nullable=True)
-    # — NEW Blueprint v2: Comparaison Multi-Marketplace —
-    prix_amazon = Column(Float, nullable=True)  # NEW: Prix spécifique Amazon
-    prix_rakuten = Column(Float, nullable=True)  # NEW: Prix spécifique Rakuten
-    volume_ventes_estime = Column(Integer, nullable=True)  # NEW: Estimation mensuelle
-    # — END NEW —
+    prix_amazon = Column(Float, nullable=True)
+    prix_rakuten = Column(Float, nullable=True)
+    volume_ventes_estime = Column(Integer, nullable=True)
     timestamp = Column(DateTime, default=lambda: datetime.utcnow())
 
     produit = relationship("ProduitReference", backref="market_data")
@@ -244,7 +232,6 @@ class PriceHistory(Base):
     produit = relationship("ProduitReference", backref="historique_prix")
 
 class CollisionResult(Base):
-    """La 'Pépite' finale validée par le Moteur de Collision."""
     __tablename__ = "collision_results"
     id = Column(Integer, primary_key=True, autoincrement=True)
     ean = Column(String, ForeignKey("produits_reference.ean"), nullable=False)
@@ -256,13 +243,11 @@ class CollisionResult(Base):
     frais_plateforme = Column(Float, default=0.0)
     profit_net_absolu = Column(Float, nullable=False)
     roi_percent = Column(Float, nullable=False)
-    certification_grade = Column(String)  # A+, A, B, C
-    status_qa = Column(String, default="PENDING_QA")  # PENDING_QA, CERTIFIED, REJECTED
+    certification_grade = Column(String)
+    status_qa = Column(String, default="PENDING_QA")
     rejected_reason = Column(String, nullable=True)
-    # — NEW Blueprint v2: Certification Phase 2 —
-    certification_finale = Column(String, default="PENDING_PHASE2")  # NEW: PENDING_PHASE2, GO, NO_GO
-    reliability_score = Column(Float, default=0.0)  # V3: Score final de la pépite 0.0-1.0
-    # — END NEW —
+    certification_finale = Column(String, default="PENDING_PHASE2")
+    reliability_score = Column(Float, default=0.0)
     timestamp = Column(DateTime, default=lambda: datetime.utcnow())
 
     produit = relationship("ProduitReference")
@@ -273,19 +258,18 @@ class CollisionResult(Base):
 # ==========================================
 
 class MissionConfig(Base):
-    """Mission d'extraction traitée par la flotte de Workers spécialisés."""
     __tablename__ = "mission_configs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     nom = Column(String, nullable=False)
-    mission_type = Column(String, nullable=False, default="PRICE_CHECK")  # PRICE_CHECK, PROMO_SCAN, CATALOGUE_FULL
-    worker_type = Column(String, nullable=False, default="HEADLESS_CAMELEON")  # API_FURTIF | HEADLESS_CAMELEON | VISION_SNIPER
-    target_urls = Column(JSON, nullable=False, default=[])  # Liste d'URLs cibles
-    extraction_params = Column(JSON, default={})  # {selectors, headers, scroll, max_pages}
-    ai_prompt_override = Column(Text, nullable=True)  # Prompt Gemini custom
-    output_schema = Column(String, default="catalogue")  # catalogue | regles
+    mission_type = Column(String, nullable=False, default="PRICE_CHECK")
+    worker_type = Column(String, nullable=False, default="HEADLESS_CAMELEON")
+    target_urls = Column(JSON, nullable=False, default=[])
+    extraction_params = Column(JSON, default={})
+    ai_prompt_override = Column(Text, nullable=True)
+    output_schema = Column(String, default="catalogue")
     frequence_cron = Column(String, default="manual")
     is_active = Column(Boolean, default=True)
-    status = Column(String, default="IDLE")  # IDLE, RUNNING, ERROR
+    status = Column(String, default="IDLE")
     last_run = Column(DateTime, nullable=True)
     last_run_duration_s = Column(Float, nullable=True)
     error_message = Column(Text, nullable=True)
@@ -295,13 +279,12 @@ class MissionConfig(Base):
     tenant = relationship("DbTenant")
 
 class MissionLog(Base):
-    """Log granulaire pour chaque URL ciblée par une Mission d'extraction."""
     __tablename__ = "mission_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     mission_id = Column(Integer, ForeignKey("mission_configs.id"), nullable=False)
     url_cible = Column(String, nullable=False)
-    statut = Column(String, default="PROCESSING")  # PROCESSING, SUCCESS, FAILED
-    message_erreur = Column(Text, nullable=True)  # Contient le traceback ou la raison
+    statut = Column(String, default="PROCESSING")
+    message_erreur = Column(Text, nullable=True)
     timestamp = Column(DateTime, default=lambda: datetime.utcnow(), onupdate=lambda: datetime.utcnow())
 
     mission = relationship("MissionConfig", backref="logs")
@@ -311,7 +294,6 @@ class MissionLog(Base):
 # ==========================================
 
 class JobQueue(Base):
-    """File d'attente pour le Conductor (Orchestration Asynchrone)."""
     __tablename__ = "job_queue"
     id = Column(Integer, primary_key=True, autoincrement=True)
     task_type = Column(String, nullable=False)
@@ -328,7 +310,6 @@ class JobQueue(Base):
     updated_at = Column(DateTime, default=lambda: datetime.utcnow(), onupdate=lambda: datetime.utcnow())
 
 class SystemEventLog(Base):
-    """Audit complet du système."""
     __tablename__ = "system_event_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)
     event_type = Column(String, nullable=False)
